@@ -73,30 +73,6 @@ class Detectron(Node):
         cv2.waitKey(4)
 
 
-    def __call__(self):
-        cap = cv2.VideoCapture(0)
-        assert cap.isOpened()
- 
-        while True:
-            ret, frame = cap.read()
-            assert ret
-
-            frame = cv2.resize(frame, (640,640))
-
-            start_time = time()
-            results = self.score_frame(frame)
-            frame = self.plot_boxes(results, frame)
-
-            end_time = time()
-            fps = 1/np.round(end_time - start_time, 2)
-            #print(f"Frames Per Second : {fps}")
-
-            cv2.putText(frame, f'FPS: {int(fps)}', (20,70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
-            cv2.imshow('YOLOv5 Detection', frame)
-            if cv2.waitKey(5) & 0xFF == 27:
-                break
-
-        cap.release()
 
 def main():
     rclpy.init(args=None)

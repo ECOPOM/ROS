@@ -1,3 +1,0 @@
-[submodule "src/yolobot_detection/yolobot_detection/yolo5"]
-	path = src/yolobot_detection/yolobot_detection/yolo5
-	url = https://github.com/ultralytics/yolov5
