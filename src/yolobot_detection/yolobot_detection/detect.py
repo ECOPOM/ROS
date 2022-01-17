@@ -27,11 +27,13 @@ class Detectron(Node):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print("Using Device: ", self.device)
 
+        self.labeled_image = self.create_publisher(Image, 'image_raw', 10)
         self.subscription = self.create_subscription(
             Image,
             'image_raw',
             self.callback,
             10)
+
 
     def score_frame(self, frame):
         self.model.to(self.device)
@@ -67,6 +69,9 @@ class Detectron(Node):
         frame = self.plot_boxes(results, frame)
         end_time = time()
         fps = 1/np.round(end_time - start_time, 2)
+
+        # labeled_frame = bridge.cv2_to_imgmsg(frame, encoding='bgr8')
+        # self.labeled_image.publish(labeled_frame)
 
         cv2.putText(frame, f'FPS: {int(fps)}', (20,70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
         cv2.imshow('YOLOv5 Detection', frame)
