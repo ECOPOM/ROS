@@ -7,13 +7,12 @@ class MinimalSubscriber(Node):
     # Initiate the Node class's constructor and give it a name
     super().__init__('trigger_node_sub')
  
-    # The node subscribes to messages of type std_msgs/String, over a topic named: /trigger and queued messages of 10.
+    # The node subscribes to messages of type std_msgs/Int8, over a topic named: /trigger and queued messages of 10.
     self.subscription = self.create_subscription(Int8, 'trigger', self.listener_callback, 10)
     self.subscription  # prevent unused variable warning
  
   def listener_callback(self, msg):
-    # Display a message on the console every time a message is received on the
-    # addison topic
+    # Display a message on the console every time a message is received on the topic
     self.get_logger().info('I heard: "%s"' % msg.data)
  
 def main(args=None):
