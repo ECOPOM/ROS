@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'triger = yolobot_triger.triger:main'
+            'triger = yolobot_triger.triger:main',
+            'triger_sub = yolobot_triger.triger_sub:main',
         ],
     },
 )
