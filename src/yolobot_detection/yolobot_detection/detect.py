@@ -7,6 +7,7 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
+from std_msgs.msg import Int8
 
 bridge = CvBridge()
 
@@ -27,7 +28,8 @@ class Detectron(Node):
         self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
         print("Using Device: ", self.device)
 
-        self.labeled_image = self.create_publisher(Image, 'image_raw', 10)
+        self.labeled_image = self.create_publisher(Image, 'image_labeled', 10)
+        self.fps = self.create_publisher(Int8, 'fps_processing', 10)
         self.subscription = self.create_subscription(
             Image,
             'image_raw',
@@ -40,7 +42,7 @@ class Detectron(Node):
         frame = [frame]
         results = self.model(frame)
         labels, cord = results.xyxyn[0][:, -1], results.xyxyn[0][:, :-1]
-        print(type(labels))
+        print(type(cords))
         return labels, cord
 
     def class_to_label(self, x):
@@ -70,13 +72,12 @@ class Detectron(Node):
         end_time = time()
         fps = 1/np.round(end_time - start_time, 2)
 
-        # labeled_frame = bridge.cv2_to_imgmsg(frame, encoding='bgr8')
-        # self.labeled_image.publish(labeled_frame)
+        labeled_frame = bridge.cv2_to_imgmsg(frame, encoding='bgr8')
+        self.labeled_image.publish(labeled_frame)
 
-        cv2.putText(frame, f'FPS: {int(fps)}', (20,70), cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0,255,0), 2)
-        cv2.imshow('YOLOv5 Detection', frame)
-        cv2.waitKey(4)
-
+        fps_data = Int8()
+        fps_data.data = int(fps)
+        self.fps.publish(fps_data)
 
 
 def main():
