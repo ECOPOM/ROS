@@ -1,5 +1,6 @@
 import torch
 import numpy as np
+import os
 import cv2
 from time import time
 
@@ -22,7 +23,7 @@ class Detectron(Node):
         self.model = torch.hub.load(
             'ultralytics/yolov5',
             'custom', 
-            path='/home/ubuntu/ROS/resources/yolov5s.pt',
+            path=str(os.path.expanduser('~')) + '/ROS/resources/yolov5s.pt',
             force_reload=True
         )
         self.classes = self.model.names
