@@ -59,18 +59,24 @@ class Detectron(Node):
 
         labels_msg = Labels()
         cords = Cords()
+        cord = Cord()
         x_shape, y_shape = frame.shape[1], frame.shape[0]
         for i in range(n):
             row = results[1][i]
             if row[4] >= 0.3:
                 x1, y1, x2, y2 = int(row[0]*x_shape), int(row[1]*y_shape), int(row[2]*x_shape), int(row[3]*y_shape)
                 bgr = (0, 255, 0)
-                cords.cords.append([x1,x2,y1,y2])
+                cord.x1 = x1
+                cord.x2 = x2
+                cord.y1 = y1
+                cord.y2 = y2
+                cords.cords.append(cord)
                 cv2.rectangle(frame, (x1, y1), (x2, y2), bgr, 2)
                 label_string = self.class_to_label(results[0][i])
                 labels_msg.labels.append(label_string)
                 cv2.putText(frame, label_string, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.9, bgr, 2)
         self.labels.publish(labels_msg)
+        self.cords.publish(cords)
         return frame
 
 
