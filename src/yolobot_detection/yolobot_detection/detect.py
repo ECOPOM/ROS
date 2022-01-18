@@ -9,14 +9,15 @@ from sensor_msgs.msg import Image, CompressedImage
 from cv_bridge import CvBridge, CvBridgeError
 from std_msgs.msg import Int8
 
+
+from yolobot_interfaces.msg import Cord, Cords, Labels
+
 bridge = CvBridge()
 
 class Detectron(Node):
     def __init__(self):
         super().__init__('detectron_node')
         self.i = 1
-        self.labels = None
-        self.cords = None
 
         self.model = torch.hub.load(
             'ultralytics/yolov5',
@@ -29,6 +30,8 @@ class Detectron(Node):
         print("Using Device: ", self.device)
 
         self.labeled_image = self.create_publisher(Image, 'image_labeled', 10)
+        self.labels = self.create_publisher(Labels, 'labels', 10)
+        self.cords = self.create_publisher(Cords, 'cordinates', 10)
         self.fps = self.create_publisher(Int8, 'fps_processing', 10)
         self.detections = self.create_publisher(Int8, 'detections', 10)
         self.subscription = self.create_subscription(
@@ -48,39 +51,27 @@ class Detectron(Node):
     def class_to_label(self, x):
         return self.classes[int(x)]
 
-    def plot_boxes(self, results, frame):
-        labels, cord = results
-        n = len(labels)
-        x_shape, y_shape = frame.shape[1], frame.shape[0]
-        for i in range(n):
-            row = cord[i]
-            if row[4] >= 0.3:
-                x1, y1, x2, y2 = int(row[0]*x_shape), int(row[1]*y_shape), int(row[2]*x_shape), int(row[3]*y_shape)
-                bgr = (0, 255, 0)
-                cv2.rectangle(frame, (x1, y1), (x2, y2), bgr, 2)
-                cv2.putText(frame, self.class_to_label(labels[i]), (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.9, bgr, 2)
-
-        return frame
-
     def pub_each(self, results, frame):
-        labels, cord = results
-        print(cord)
- 
-        n = len(labels)
+        n = len(results[0])
         detections = Int8()
         detections.data = n
         self.detections.publish(detections)
 
-
+        labels_msg = Labels()
+        cords = Cords()
         x_shape, y_shape = frame.shape[1], frame.shape[0]
         for i in range(n):
-            row = cord[i]
+            row = results[1][i]
             if row[4] >= 0.3:
                 x1, y1, x2, y2 = int(row[0]*x_shape), int(row[1]*y_shape), int(row[2]*x_shape), int(row[3]*y_shape)
                 bgr = (0, 255, 0)
+                cords.cords.append([x1,x2,y1,y2])
                 cv2.rectangle(frame, (x1, y1), (x2, y2), bgr, 2)
-                cv2.putText(frame, self.class_to_label(labels[i]), (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.9, bgr, 2)
-
+                label_string = self.class_to_label(results[0][i])
+                labels_msg.labels.append(label_string)
+                cv2.putText(frame, label_string, (x1, y1), cv2.FONT_HERSHEY_SIMPLEX, 0.9, bgr, 2)
+        self.labels.publish(labels_msg)
+        return frame
 
 
 
@@ -91,10 +82,9 @@ class Detectron(Node):
 
         start_time = time()
         results = self.score_frame(frame)
-        frame = self.plot_boxes(results, frame)
+        frame = self.pub_each(results, frame)
         end_time = time()
 
-        self.pub_each(results, frame)
 
         labeled_frame = bridge.cv2_to_imgmsg(frame, encoding='bgr8')
         self.labeled_image.publish(labeled_frame)

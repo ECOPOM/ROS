@@ -24,6 +24,9 @@ find_package(rosidl_default_generators REQUIRED)
 
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Num.msg"
+  "msg/Cord.msg"
+  "msg/Cords.msg"
+  "msg/Labels.msg"
   "srv/AddThreeInts.srv"
 )
 
