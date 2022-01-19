@@ -8,12 +8,22 @@ def generate_launch_description():
             executable='rosbridge_websocket',
             name='rosbridge'
         )
-    camera = Node(
-            namespace='yolobot',
-            package='usb_cam',
-            executable='usb_cam_node_exe',
-            name='camera'
-        )
+    realsense = True
+    if realsense:
+        camera = Node(
+                namespace='yolobot',
+                package='usb_cam',
+                executable='usb_cam_node_exe',
+                name='camera'
+            )
+    else:
+        camera = Node(
+                namespace='yolobot',
+                package='realsense2_camera',
+                executable='realsense2_camera_node',
+                name='camera'
+            )
+
     triger = Node(
             namespace='yolobot',
             package='yolobot_triger',
