@@ -12,15 +12,15 @@ def generate_launch_description():
     if realsense:
         camera = Node(
                 namespace='yolobot',
-                package='usb_cam',
-                executable='usb_cam_node_exe',
+                package='realsense2_camera',
+                executable='realsense2_camera_node',
                 name='camera'
             )
     else:
         camera = Node(
                 namespace='yolobot',
-                package='realsense2_camera',
-                executable='realsense2_camera_node',
+                package='usb_cam',
+                executable='usb_cam_node_exe',
                 name='camera'
             )
 
