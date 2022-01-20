@@ -1,23 +1,31 @@
 from  launch import LaunchDescription
 from launch_ros.actions import Node
+from launch.actions import DeclareLaunchArgument, ExecuteProcess, TimerAction
+from launch.conditions import IfCondition
+from launch.substitutions import LaunchConfiguration, PythonExpression
 
 def generate_launch_description():
+    camera = DeclareLaunchArgument('camera', default_value='realsense')
+
     rosbridge = Node(
             namespace='yolobot',
             package='rosbridge_server',
             executable='rosbridge_websocket',
             name='rosbridge'
         )
-    realsense = True
+
+    if camera == 'realsense': print("REAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAL")
+
+    realsense = False
     if realsense:
-        camera = Node(
+        camera_source = Node(
                 namespace='yolobot',
                 package='realsense2_camera',
                 executable='realsense2_camera_node',
                 name='camera'
             )
     else:
-        camera = Node(
+        camera_source = Node(
                 namespace='yolobot',
                 package='usb_cam',
                 executable='usb_cam_node_exe',
@@ -56,9 +64,10 @@ def generate_launch_description():
 
 
     return LaunchDescription([
+        camera,
         triger,
         triger_sub,
-        camera,
+        camera_source,
         detectron,
         rosbridge,
     ])
