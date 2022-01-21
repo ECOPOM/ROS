@@ -37,7 +37,7 @@ class Detectron(Node):
         self.detections = self.create_publisher(Int8, 'detections', 10)
         self.subscription = self.create_subscription(
             Image,
-            'image_raw',
+            'color/image_raw',
             self.callback,
             10)
 

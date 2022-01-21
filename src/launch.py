@@ -1,4 +1,4 @@
-from  launch import LaunchDescription
+from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, TimerAction
 from launch.conditions import IfCondition
@@ -29,7 +29,10 @@ def generate_launch_description():
                 namespace='yolobot',
                 package='usb_cam',
                 executable='usb_cam_node_exe',
-                name='camera'
+                name='camera',
+                remappings=[
+                    ("image_raw", "color/image_raw")
+                ]
             )
 
     triger = Node(
