@@ -6,14 +6,6 @@ from launch.substitutions import LaunchConfiguration, PythonExpression
 
 def generate_launch_description():
     camera = DeclareLaunchArgument('camera', default_value='realsense')
-
-    rosbridge = Node(
-            namespace='yolobot',
-            package='rosbridge_server',
-            executable='rosbridge_websocket',
-            name='rosbridge'
-        )
-
     if camera == 'realsense': print("REAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAL")
 
     realsense = False
@@ -61,7 +53,12 @@ def generate_launch_description():
             name='trigered',
         )
 
-
+    rosbridge = Node(
+            namespace='trigered',
+            package='rosbridge_server',
+            executable='rosbridge_websocket',
+            name='rosbridge'
+        )
 
     return LaunchDescription([
         camera,

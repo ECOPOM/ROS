@@ -18,10 +18,10 @@ class MinimalSubscriber(Node):
         self.labels = self.create_subscription(Labels, '/yolobot/labels', self.labels_callback, 10)
         self.cords = self.create_subscription(Cords, '/yolobot/cordinates', self.cords_callback, 10)
  
-        self.labeled_image_pub = self.create_publisher(Image, '/triggered/image_labeled',10)
-        self.raw_image_pub = self.create_publisher(Image,'/triggered/image_raw', 10)
-        self.labels_pub = self.create_publisher(Labels, '/triggered/labels', 10)
-        self.cords_pub = self.create_publisher(Cords, '/triggered/cordinates', 10)
+        self.labeled_image_pub = self.create_publisher(Image, 'image_labeled',10)
+        self.raw_image_pub = self.create_publisher(Image,'image_raw', 10)
+        self.labels_pub = self.create_publisher(Labels, 'labels', 10)
+        self.cords_pub = self.create_publisher(Cords, 'cordinates', 10)
 
 
     def labeled_image_callback(self, msg):
