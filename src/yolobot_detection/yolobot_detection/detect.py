@@ -100,7 +100,6 @@ class Detectron(Node):
         fps_data.data = int(1/np.round(end_time - start_time, 2))
         self.fps.publish(fps_data)
 
-
 def main():
     rclpy.init(args=None)
     print('Hi from yolobot_detection.')

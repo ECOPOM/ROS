@@ -1,15 +1,15 @@
 import time
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Int8
+from std_msgs.msg import Int64
  
 class MinimalPublisher(Node):
   def __init__(self):
     # Initiate the Node class's constructor and give it a name
     super().__init__('trigger_node')
 
-    # Create the publisher. This publisher will publish a Int8 message to the trigger topic. The queue size is 10 messages.
-    self.publisher_ = self.create_publisher(Int8, 'trigger', 10)
+    # Create the publisher. This publisher will publish a Int64 message to the trigger topic. The queue size is 10 messages.
+    self.publisher_ = self.create_publisher(Int64, 'trigger', 10)
 
     # We will publish a message every x seconds
     timer_period = 1  # seconds
@@ -21,10 +21,10 @@ class MinimalPublisher(Node):
     self.i = 1
  
   def timer_callback(self):
-    # Create a Int8 message
-    msg = Int8()
+    # Create a Int64 message
+    msg = Int64()
  
-    # Set the Int8 message's data
+    # Set the Int64 message's data
     msg.data = self.i
 
     # Publish the message to the topic
@@ -38,8 +38,8 @@ class MinimalPublisher_2(Node):
     # Initiate the Node class's constructor and give it a name
     super().__init__('counter_node')
 
-    # Create the publisher. This publisher will publish a Int8 message to the trigger topic. The queue size is 10 messages.
-    self.publisher_ = self.create_publisher(Int8, 'counter', 10)
+    # Create the publisher. This publisher will publish a Int64 message to the trigger topic. The queue size is 10 messages.
+    self.publisher_ = self.create_publisher(Int64, 'counter', 10)
 
     # We will publish a message every x seconds
     timer_period = 1  # seconds
@@ -51,10 +51,10 @@ class MinimalPublisher_2(Node):
     self.i = 0
  
   def timer_callback(self):
-    # Create a Int8 message
-    msg = Int8()
+    # Create a Int64 message
+    msg = Int64()
  
-    # Set the Int8 message's data
+    # Set the Int64 message's data
     msg.data = self.i
 
     # Publish the message to the topic

@@ -46,17 +46,6 @@ def generate_launch_description():
                       {"background_b": 0}
                        ]
         )
-    triger_sub = Node(
-            namespace='yolobot',
-            package='yolobot_triger',
-            executable='triger_sub',
-            name='triger_sub',
-            parameters=[
-                      {"background_r": 0},
-                      {"background_g": 0},
-                      {"background_b": 0}
-                       ]
-        )
 
     detectron = Node(
             namespace='yolobot',
@@ -65,11 +54,19 @@ def generate_launch_description():
             name='detectron'
         )
 
+    trigered = Node(
+            namespace='trigered',
+            package='yolobot_triger',
+            executable='trigered',
+            name='trigered',
+        )
+
+
 
     return LaunchDescription([
         camera,
         triger,
-        triger_sub,
+        trigered,
         camera_source,
         detectron,
         rosbridge,
