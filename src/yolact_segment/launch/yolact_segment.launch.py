@@ -10,7 +10,7 @@ def generate_launch_description():
 
     #Load params
 
-    pkg_dir = get_package_share_directory('yolact_ros2')
+    pkg_dir = get_package_share_directory('yolact_segment')
     config_file = os.path.join(pkg_dir, 'config', params_file)
 
     stdout_linebuf_envvar = SetEnvironmentVariable(
@@ -18,18 +18,18 @@ def generate_launch_description():
 
     #Create Node:
 
-    yolact_ros_node = Node(
-    package='yolact_ros2',
-    node_executable='yolact_ros2_node',
-    node_name='yolact_ros2_node',
-    output='screen',
-    parameters=[config_file]
+    yolact_segment = Node(
+        package='yolact_segment',
+        node_executable='yolact_segment_node',
+        node_name='yolact_segmant_node',
+        output='screen',
+        parameters=[config_file]
     )
 
 
     ld = LaunchDescription()
 
     ld.add_action(stdout_linebuf_envvar)
-    ld.add_action(yolact_ros_node)
+    ld.add_action(yolact_segment)
 
     return ld
