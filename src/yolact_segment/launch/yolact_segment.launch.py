@@ -20,8 +20,8 @@ def generate_launch_description():
 
     yolact_segment = Node(
         package='yolact_segment',
-        node_executable='yolact_segment_node',
-        node_name='yolact_segmant_node',
+        executable='segment',
+        name='yolact_segmant_node',
         output='screen',
         parameters=[config_file]
     )
