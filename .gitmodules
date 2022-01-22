@@ -1,0 +1,3 @@
+[submodule "src/yolact_segment/yolact"]
+	path = src/yolact_segment/yolact
+	url = https://github.com/dbolya/yolact.git
