@@ -55,6 +55,15 @@ def generate_launch_description():
             name='detectron'
         )
 
+    qr = Node(
+            namespace='yolobot',
+            package='yolobot_qr',
+            executable='qr_reader',
+            name='qr'
+        )
+
+
+
     trigered = Node(
             namespace='trigered',
             package='yolobot_triger',
@@ -75,5 +84,6 @@ def generate_launch_description():
         trigered,
         camera_source,
         detectron,
+        qr,
         rosbridge,
     ])

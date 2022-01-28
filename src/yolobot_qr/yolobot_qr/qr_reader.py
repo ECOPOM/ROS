@@ -17,7 +17,7 @@ class Detectron(Node):
  
         self.subscription = self.create_subscription(
                 Image,
-                'color/image_raw',
+                '/yolobot/color/image_raw',
                 self.callback,
                 10)
         self.labeled_image = self.create_publisher(Image, 'qr_image', 10)
@@ -30,10 +30,18 @@ class Detectron(Node):
         barcodes = decode(img)
         labels = []
         for barcode in barcodes:
-            labels.append(barcode.data.decode('utf-8'))
+            label=barcode.data.decode('utf-8')
+            color = (255,0,255)
+            if label == "START":
+                color = (0,255,0)
+            elif label == "STOP":
+                color = (0,0,255)
+            labels.append(label)
             pts = np.array([barcode.polygon], np.int32)
             pts = pts.reshape((-1,1,2))
-            cv2.polylines(img, [pts], True, (255,0,255), 5)
+            cv2.polylines(img, [pts], True, color, 5)
+            pts2 = barcode.rect
+            cv2.putText(img, label, (pts2[0], pts2[1]), cv2.FONT_HERSHEY_SIMPLEX, 0.9, color, 2)
         return img, labels
 
 
