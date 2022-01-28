@@ -45,9 +45,7 @@ class YolactNode(Node):
         self.unpause_visualization = threading.Event()
         self.bridge = CvBridge()
 
-        self.declare_parameters(
-        namespace='',
-        parameters=[
+        self.declare_parameters(namespace='', parameters=[
             ('yolact_path', self.yolact_path_),
             ('model_path', self.model_path_),
             ('image_topic', self.image_topic_),
@@ -74,7 +72,7 @@ class YolactNode(Node):
 
         # Set Reconfigurable parameters Callback:
 
-        self.set_parameters_callback(self.parameter_callback_)
+        self.add_on_set_parameters_callback(self.parameter_callback_)
 
         sys.path.append(self.yolact_path_)
 

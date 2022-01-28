@@ -2,7 +2,7 @@ from __future__ import print_function
 import roslibpy
 import json
 
-client = roslibpy.Ros(host='10.60.64.2', port=9090)
+client = roslibpy.Ros(host='10.60.64.1', port=9090)
 client.run()
 
 

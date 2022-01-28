@@ -23,7 +23,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'segment = yolact_segment.segment:main'
+            'segment = yolact_segment.segment:main',
+            'segment2 = yolact_segment.yolact_ros2:main'
         ],
     },
 )

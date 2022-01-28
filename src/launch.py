@@ -8,6 +8,15 @@ def generate_launch_description():
     camera = DeclareLaunchArgument('camera', default_value='realsense')
     if camera == 'realsense': print("REAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAL")
 
+    # realsense2_camera  = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         os.path.join(
+    #             get_package_share_directory('realsense2_camera'),
+    #             'launch/rs_launch.py')
+    #     ),
+    #     launch_arguments={'enable_pointcloud': 'true'}.items(),
+    # )
+
     realsense = False
     if realsense:
         camera_source = Node(
