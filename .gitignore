@@ -4,3 +4,4 @@ install
 log
 resources
 src/__pycache__
+.direnv
