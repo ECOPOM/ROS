@@ -1,0 +1,27 @@
+detectron_node:
+  ros__parameters:
+    detection: "apples"
+    apple_weights: "~/ROS/resources/yolov5s.pt"
+
+node_2:
+  ros__parameters:
+    int_number: 27
+    float_param: 45.2
+
+node_3:
+  ros__parameters:
+    int_number: 45
+
+your_amazing_node:
+  ros__parameters:
+    bool_value: True
+    int_number: 5
+    float_number: 3.14
+    str_text: "Hello Universe"
+    bool_array: [True, False, True]
+    int_array: [10, 11, 12, 13]
+    float_array: [7.5, 400.4]
+    str_array: ['Nice', 'more', 'params']
+    bytes_array: [0x01, 0xF1, 0xA2]
+    nested_param:
+      another_int: 7

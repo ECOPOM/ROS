@@ -6,8 +6,8 @@ from time import time
 
 import rclpy
 from rclpy.node import Node
-from sensor_msgs.msg import Image, CompressedImage
-from cv_bridge import CvBridge, CvBridgeError
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
 from std_msgs.msg import Int8
 
 
@@ -15,14 +15,22 @@ from yolobot_interfaces.msg import Cord, Cords, Labels
 
 bridge = CvBridge()
 
+
 class Detectron(Node):
     def __init__(self):
         super().__init__('detectron_node')
         self.i = 1
 
+        self.declare_parameters(
+            namespace='',
+            parameters=[
+                ('detections', "apples"),
+                ('apple_weights', "~/ROS/resources/yolov5s.pt")
+            ])
+
         self.model = torch.hub.load(
             'ultralytics/yolov5',
-            'custom', 
+            'custom',
             path=str(os.path.expanduser('~')) + '/ROS/resources/yolov5s.pt',
             force_reload=True
         )
@@ -40,7 +48,6 @@ class Detectron(Node):
             'color/image_raw',
             self.callback,
             10)
-
 
     def score_frame(self, frame):
         self.model.to(self.device)
@@ -80,8 +87,6 @@ class Detectron(Node):
         self.cords.publish(cords)
         return frame
 
-
-
     def callback(self, data):
         self.i += 1
         print("checking " + str(self.i))
@@ -92,7 +97,6 @@ class Detectron(Node):
         frame = self.pub_each(results, frame)
         end_time = time()
 
-
         labeled_frame = bridge.cv2_to_imgmsg(frame, encoding='bgr8')
         self.labeled_image.publish(labeled_frame)
 
@@ -100,12 +104,14 @@ class Detectron(Node):
         fps_data.data = int(1/np.round(end_time - start_time, 2))
         self.fps.publish(fps_data)
 
+
 def main():
     rclpy.init(args=None)
     print('Hi from yolobot_detection.')
     detector = Detectron()
     rclpy.spin(detector)
     rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
