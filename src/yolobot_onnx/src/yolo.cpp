@@ -1,9 +1,8 @@
 #include <fstream>
-#include <opencv2/opencv.hpp>
-
 #include <memory>
 
 #include "rclcpp/rclcpp.hpp"
+#include <rclcpp/qos.hpp>
 #include "std_msgs/msg/string.hpp"
 #include "sensor_msgs/msg/image.hpp"
 #include <image_transport/image_transport.hpp>
@@ -11,15 +10,11 @@
 #include <memory>
 #include "cv_bridge/cv_bridge.h"
 #include <opencv2/opencv.hpp>
-// #include <sensor_msgs/msg/image_encodings.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/highgui/highgui.hpp>
 
 
-#include "rclcpp/rclcpp.hpp"
-#include "std_msgs/msg/string.hpp"
 using std::placeholders::_1;
-
 const std::vector<cv::Scalar> colors = {cv::Scalar(255, 255, 0), cv::Scalar(0, 255, 0), cv::Scalar(0, 255, 255), cv::Scalar(255, 0, 0)};
 
 const float INPUT_WIDTH = 640.0;
@@ -34,8 +29,48 @@ struct Detection {
     cv::Rect box;
 };
 
-void load_net(cv::dnn::Net &net, bool is_cuda){
-    auto result = cv::dnn::readNet("config_files/yolov5s.onnx");
+
+class RealSenseSubscriber: public rclcpp::Node {
+    public:
+        RealSenseSubscriber(rclcpp::NodeOptions options = rclcpp::NodeOptions());
+        ~RealSenseSubscriber(){}
+ 
+    private:
+        void onImageSubscribed(sensor_msgs::msg::Image::SharedPtr img);
+        int callback(int argc, char **argv);
+        void load_net(cv::dnn::Net &net, bool is_cuda);
+        std::vector<std::string> load_class_list();
+        cv::Mat format_yolov5(const cv::Mat &source);
+        void detect(cv::Mat &image, cv::dnn::Net &net, std::vector<Detection> &output, const std::vector<std::string> &className);
+ 
+        rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_img;
+        std::string image_topic_name;
+        bool has_cuda;
+        std::string class_list_path;
+        std::string model_onnx_path;
+};
+
+RealSenseSubscriber::RealSenseSubscriber(rclcpp::NodeOptions options) : Node("realsense_subscriber", options) {
+    image_topic_name = this->declare_parameter<std::string>(
+            "image_topic_name", 
+            "/image_raw");
+    class_list_path = this->declare_parameter<std::string>(
+            "class_list_path", 
+            "/home/bresilla/down/yolov5-opencv-cpp-python/config_files/classes.txt");
+    model_onnx_path = this->declare_parameter<std::string>(
+            "model_onnx_path", 
+            "/home/bresilla/down/yolov5-opencv-cpp-python/config_files/yolov5s.onnx");
+
+    has_cuda = this->declare_parameter<bool>("has_cuda", true);
+    rclcpp::QoS video_qos(10);
+    video_qos.best_effort();
+    video_qos.durability_volatile();
+    sub_img = this->create_subscription<sensor_msgs::msg::Image>(image_topic_name, video_qos, std::bind(&RealSenseSubscriber::onImageSubscribed, this, std::placeholders::_1));
+}
+
+
+void RealSenseSubscriber::load_net(cv::dnn::Net &net, bool is_cuda){
+    auto result = cv::dnn::readNet(model_onnx_path);
     if (is_cuda){
         std::cout << "Attempty to use CUDA\n";
         result.setPreferableBackend(cv::dnn::DNN_BACKEND_CUDA);
@@ -48,9 +83,9 @@ void load_net(cv::dnn::Net &net, bool is_cuda){
     net = result;
 }
 
-std::vector<std::string> load_class_list(){
+std::vector<std::string> RealSenseSubscriber::load_class_list(){
     std::vector<std::string> class_list;
-    std::ifstream ifs("config_files/classes.txt");
+    std::ifstream ifs(class_list_path);
     std::string line;
     while (getline(ifs, line)){
         class_list.push_back(line);
@@ -58,7 +93,7 @@ std::vector<std::string> load_class_list(){
     return class_list;
 }
 
-cv::Mat format_yolov5(const cv::Mat &source) {
+cv::Mat RealSenseSubscriber::format_yolov5(const cv::Mat &source) {
     int col = source.cols;
     int row = source.rows;
     int _max = MAX(col, row);
@@ -67,7 +102,7 @@ cv::Mat format_yolov5(const cv::Mat &source) {
     return result;
 }
 
-void detect(cv::Mat &image, cv::dnn::Net &net, std::vector<Detection> &output, const std::vector<std::string> &className) {
+void RealSenseSubscriber::detect(cv::Mat &image, cv::dnn::Net &net, std::vector<Detection> &output, const std::vector<std::string> &className) {
     cv::Mat blob;
     auto input_image = format_yolov5(image);
     cv::dnn::blobFromImage(input_image, blob, 1./255., cv::Size(INPUT_WIDTH, INPUT_HEIGHT), cv::Scalar(), true, false);
@@ -121,7 +156,7 @@ void detect(cv::Mat &image, cv::dnn::Net &net, std::vector<Detection> &output, c
     }
 }
 
-int main2(int argc, char **argv){
+int RealSenseSubscriber::callback(int argc, char **argv){
     std::vector<std::string> class_list = load_class_list();
     cv::Mat frame;
     cv::VideoCapture capture("sample.mp4");
@@ -190,71 +225,20 @@ int main2(int argc, char **argv){
     return 0;
 }
 
-class MinimalSubscriber : public rclcpp::Node {
-    public:
-        MinimalSubscriber() : Node("minimal_subscriber") {
-            subscription_ = this->create_subscription<sensor_msgs::msg::Image>(
-            "topic", 10, std::bind(&MinimalSubscriber::topic_callback, this, _1));
-        }
-
-    private:
-        void topic_callback(const sensor_msgs::msg::Image::SharedPtr msg) const {
-            cv_bridge::CvImagePtr cv_ptr;
-
-            cv_ptr = cv_bridge::toCvCopy(msg, sensor_msgs::image_encodings::BGR8);
-            if (cv_ptr->image.rows > 60 && cv_ptr->image.cols > 60) {
-                cv::circle(cv_ptr->image, cv::Point(50, 50), 10, CV_RGB(255,0,0));
-            }
-        }
-        rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription_;
-};
-
-int main3(int argc, char * argv[]) {
-  rclcpp::init(argc, argv);
-  rclcpp::spin(std::make_shared<MinimalSubscriber>());
-  rclcpp::shutdown();
-  return 0;
-}
-
-
-
-#include <rclcpp/rclcpp.hpp>
-#include <rclcpp/qos.hpp>
-#include <sensor_msgs/msg/image.hpp>
-#include <cv_bridge/cv_bridge.h>
-#include <opencv2/opencv.hpp>
-
-
-class RealSenseSubscriber: public rclcpp::Node {
-    public:
-        RealSenseSubscriber(rclcpp::NodeOptions options = rclcpp::NodeOptions());
-        ~RealSenseSubscriber(){}
- 
-    private:
-        void onImageSubscribed(sensor_msgs::msg::Image::SharedPtr img);
-        rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_img;
-        std::string image_topic_name;
-};
-
-RealSenseSubscriber::RealSenseSubscriber(rclcpp::NodeOptions options) : Node("realsense_subscriber", options)
-{
-    image_topic_name = this->declare_parameter<std::string>("image_topic_name", "/camera/color/image_raw");
-    rclcpp::QoS video_qos(10);
-    video_qos.best_effort();
-    video_qos.durability_volatile();
-    sub_img = this->create_subscription<sensor_msgs::msg::Image>(image_topic_name, video_qos, std::bind(&RealSenseSubscriber::onImageSubscribed, this, std::placeholders::_1));
-}
-
-void RealSenseSubscriber::onImageSubscribed(sensor_msgs::msg::Image::SharedPtr img)
-{
+void RealSenseSubscriber::onImageSubscribed(sensor_msgs::msg::Image::SharedPtr img) {
     auto cv_img = cv_bridge::toCvShare(img, img->encoding);
     cv::cvtColor(cv_img->image, cv_img->image, cv::COLOR_RGB2BGR);
+
+    std::vector<std::string> class_list = load_class_list();
+ 
+    cv::dnn::Net net;
+    load_net(net, has_cuda);
+
     cv::imshow("Image", cv_img->image);
     cv::waitKey(1);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     rclcpp::init(argc, argv);
     rclcpp::spin(std::make_shared<RealSenseSubscriber>());
     rclcpp::shutdown();
