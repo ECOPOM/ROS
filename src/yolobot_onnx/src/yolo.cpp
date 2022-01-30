@@ -209,9 +209,54 @@ class MinimalSubscriber : public rclcpp::Node {
         rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr subscription_;
 };
 
-int main(int argc, char * argv[]) {
+int main3(int argc, char * argv[]) {
   rclcpp::init(argc, argv);
   rclcpp::spin(std::make_shared<MinimalSubscriber>());
   rclcpp::shutdown();
   return 0;
+}
+
+
+
+#include <rclcpp/rclcpp.hpp>
+#include <rclcpp/qos.hpp>
+#include <sensor_msgs/msg/image.hpp>
+#include <cv_bridge/cv_bridge.h>
+#include <opencv2/opencv.hpp>
+
+
+class RealSenseSubscriber: public rclcpp::Node {
+    public:
+        RealSenseSubscriber(rclcpp::NodeOptions options = rclcpp::NodeOptions());
+        ~RealSenseSubscriber(){}
+ 
+    private:
+        void onImageSubscribed(sensor_msgs::msg::Image::SharedPtr img);
+        rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr sub_img;
+        std::string image_topic_name;
+};
+
+RealSenseSubscriber::RealSenseSubscriber(rclcpp::NodeOptions options) : Node("realsense_subscriber", options)
+{
+    image_topic_name = this->declare_parameter<std::string>("image_topic_name", "/camera/color/image_raw");
+    rclcpp::QoS video_qos(10);
+    video_qos.best_effort();
+    video_qos.durability_volatile();
+    sub_img = this->create_subscription<sensor_msgs::msg::Image>(image_topic_name, video_qos, std::bind(&RealSenseSubscriber::onImageSubscribed, this, std::placeholders::_1));
+}
+
+void RealSenseSubscriber::onImageSubscribed(sensor_msgs::msg::Image::SharedPtr img)
+{
+    auto cv_img = cv_bridge::toCvShare(img, img->encoding);
+    cv::cvtColor(cv_img->image, cv_img->image, cv::COLOR_RGB2BGR);
+    cv::imshow("Image", cv_img->image);
+    cv::waitKey(1);
+}
+
+int main(int argc, char **argv)
+{
+    rclcpp::init(argc, argv);
+    rclcpp::spin(std::make_shared<RealSenseSubscriber>());
+    rclcpp::shutdown();
+    return 0;
 }
