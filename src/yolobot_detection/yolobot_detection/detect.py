@@ -25,13 +25,15 @@ class Detectron(Node):
             namespace='',
             parameters=[
                 ('detections', "apples"),
-                ('apple_weights', "~/ROS/resources/yolov5s.pt")
+                ('apple_weights', "/home/bresilla/ROS/resources/yolov5s.pt")
             ])
+
+        detections_param = self.get_parameter('apple_weights').get_parameter_value().string_value
 
         self.model = torch.hub.load(
             'ultralytics/yolov5',
             'custom',
-            path=str(os.path.expanduser('~')) + '/ROS/resources/yolov5s.pt',
+            path=detections_param,
             force_reload=True
         )
         self.classes = self.model.names

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(yolobot)
+project(yolobot_onnx)
 
 # Default to C99
 if(NOT CMAKE_C_STANDARD)
@@ -17,14 +17,20 @@ endif()
 
 # find dependencies
 find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(cv_bridge REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(image_transport REQUIRED)
+find_package(sensor_msgs REQUIRED)
+find_package(OpenCV REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
-install(DIRECTORY
-  launch
-  config
-  DESTINATION share/${PROJECT_NAME}
-)
+
+add_executable(yolo src/yolo.cpp)
+ament_target_dependencies(yolo OpenCV image_transport sensor_msgs cv_bridge rclcpp)
+
+install(TARGETS yolo DESTINATION lib/${POROEJC_NAME})
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

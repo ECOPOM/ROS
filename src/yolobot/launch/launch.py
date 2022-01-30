@@ -1,8 +1,13 @@
+from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, ExecuteProcess, TimerAction
 from launch.conditions import IfCondition
 from launch.substitutions import LaunchConfiguration, PythonExpression
+from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
+
+import os
 
 def generate_launch_description():
     camera = DeclareLaunchArgument('camera', default_value='realsense')
@@ -48,12 +53,29 @@ def generate_launch_description():
                        ]
         )
 
+    # detectron  = IncludeLaunchDescription(
+    #     PythonLaunchDescriptionSource(
+    #         os.path.join(
+    #             get_package_share_directory('yolobot_detection'),
+    #             'launch.py')
+    #     ),
+    #     # launch_arguments={'enable_pointcloud': 'true'}.items(),
+    # )
+
+
+    config_detectron = os.path.join(
+        get_package_share_directory('yolobot'),
+        'config', 'params.yaml'
+    )
     detectron = Node(
             namespace='yolobot',
             package='yolobot_detection',
             executable='detect',
-            name='detectron'
+            name='detectron',
+            parameters=[config_detectron]
         )
+
+
 
     qr = Node(
             namespace='yolobot',
