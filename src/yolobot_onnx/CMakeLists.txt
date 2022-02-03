@@ -22,13 +22,17 @@ find_package(cv_bridge REQUIRED)
 find_package(std_msgs REQUIRED)
 find_package(image_transport REQUIRED)
 find_package(sensor_msgs REQUIRED)
-find_package(OpenCV REQUIRED)
+find_package(Eigen3 REQUIRED)
+find_package(Iconv REQUIRED)
+
+set(OpenCV_DIR "/usr/local/lib/")
+find_package(OpenCV 4.5.5 REQUIRED)
 # uncomment the following section in order to fill in
 # further dependencies manually.
 # find_package(<dependency> REQUIRED)
 
 add_executable(yolo src/yolo.cpp)
-ament_target_dependencies(yolo OpenCV image_transport sensor_msgs cv_bridge rclcpp)
+ament_target_dependencies(yolo OpenCV Iconv Eigen3 image_transport sensor_msgs cv_bridge rclcpp)
 
 install(TARGETS yolo DESTINATION lib/${POROEJC_NAME})
 
