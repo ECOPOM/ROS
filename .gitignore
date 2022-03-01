@@ -5,3 +5,4 @@ log
 resources
 src/__pycache__
 .direnv
+.vscode
